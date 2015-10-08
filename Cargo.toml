@@ -1,0 +1,18 @@
+[package]
+name = "eligos"
+version = "0.1.0"
+authors = ["Tyler Neely <t@jujit.su>"]
+
+[dependencies]
+bytes = "0.2.11"
+mio = "0.4.2"
+threadpool = "0.1.4"
+
+[dev-dependencies]
+quickcheck = "*"
+rand = "0.3"
+
+[[test]]
+
+name = "test"
+path = "test/test.rs"

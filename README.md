@@ -2,7 +2,7 @@
 Service framework for Rust!
 
 Concepts:
-* Codec: serializes requests and deserialize responses
+* Codec: deserializes requests and serialize responses
 * Service: accepts from a listening socket and hands the connection to a Receiver
 * Receiver: uses user-supplied logic to handle a request and optionally respond.  Every Receiver has its own thread and MIO event loop.
 

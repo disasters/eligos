@@ -1,5 +1,6 @@
 [package]
 name = "eligos"
+description = "Rusty Services"
 version = "0.1.0"
 authors = ["Tyler Neely <t@jujit.su>"]
 license = "Apache-2.0"

@@ -1,7 +1,10 @@
 # eligos
-Services framework for Rust!
+Service framework for Rust!
 
-Codecs serialize requests and deserialize responses.  Workers are threads that run their own MIO event loop.  Receivers are the code that workers run.
+Concepts:
+* Codec: serializes requests and deserialize responses
+* Service: accepts from a listening socket and hands the connection to a Receiver
+* Receiver: uses user-supplied logic to handle a request and optionally respond.  Every Receiver has its own thread and MIO event loop.
 
 ```
 extern crate bytes;

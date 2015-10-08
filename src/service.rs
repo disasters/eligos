@@ -1,3 +1,5 @@
+extern crate rand;
+
 use std::io::{Error, ErrorKind};
 use std::io;
 use std::sync::Arc;
@@ -7,6 +9,8 @@ use bytes::{alloc, Buf, ByteBuf};
 use mio::{EventLoop, EventSet, PollOpt, Handler, Sender, Token, TryWrite, TryRead};
 use mio::tcp::{TcpListener, TcpSocket, TcpStream};
 use mio::util::Slab;
+use self::rand::Rng;
+use self::rand::distributions::{IndependentSample, Range};
 
 use ::{Receive, Worker, Envelope, Codec};
 
@@ -88,7 +92,9 @@ impl<Req: 'static + Send, Res: 'static + Send> Service<Req, Res> {
         let sock = try!(self.sock.accept());
         // TODO(tyler) load balancing logic here
         if sock.is_some() {
-            self.workers[0].send(sock.unwrap());
+            let mut rng = rand::thread_rng();
+            let between = Range::new(0, self.workers.len());
+            self.workers[between.ind_sample(&mut rng)].send(sock.unwrap());
         }
         Ok(())
     }

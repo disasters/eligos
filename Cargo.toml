@@ -10,10 +10,10 @@ keywords = ["distributed-systems", "mio", "services"]
 [dependencies]
 bytes = "0.2.11"
 mio = "0.4.2"
+rand = "0.3"
 
 [dev-dependencies]
 quickcheck = "*"
-rand = "0.3"
 
 [[test]]
 

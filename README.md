@@ -45,8 +45,7 @@ impl Receive<usize, usize> for ByteAddReceiver {
     }
 }
 
-#[test]
-fn it_works() {
+fn main() {
     let receiver = Box::new(ByteAddReceiver {
         counter: 0,
     });

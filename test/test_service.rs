@@ -1,9 +1,6 @@
-use std::sync::atomic::{AtomicUsize, Ordering};
-use std::sync::Arc;
-
 use bytes::{Buf, ByteBuf};
 
-use eligos::{Service, Codec, Framed, Receive, usize_to_array};
+use eligos::{Service, Codec, Framed, Receive, ClientInfo};
 
 struct CountCodec;
 
@@ -25,22 +22,22 @@ fn build_codec() -> Box<Codec<ByteBuf, usize>> {
 }
 
 struct ByteAddReceiver {
-    counter: Arc<AtomicUsize>,
+    counter: usize,
 }
 
 // take requests of usize, return responses of usize
 impl Receive<usize, usize> for ByteAddReceiver {
-    fn receive(&self, req_bytes: &usize) -> Option<usize> {
-        let count = self.counter.fetch_add(*req_bytes, Ordering::SeqCst);
-        println!("in handler for srv! bytes so far: {}", count);
-        Some(count)
+    fn receive(&mut self, client_info: ClientInfo, req_bytes: &usize) -> Option<usize> {
+        self.counter += *req_bytes;
+        println!("got req from {:?}! bytes so far: {}", client_info, self.counter);
+        Some(self.counter)
     }
 }
 
 #[test]
 fn it_works() {
     let receiver = Box::new(ByteAddReceiver {
-        counter: Arc::new(AtomicUsize::new(0)),
+        counter: 0,
     });
 
     let mut service = Service::new(

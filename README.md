@@ -33,16 +33,17 @@ struct ByteAddReceiver {
     counter: usize,
 }
 
-// take requests of usize, return how much we have so far
+// take requests of usize, return responses of usize
 impl Receive<usize, usize> for ByteAddReceiver {
-    fn receive(&self, req_bytes: &usize) -> Option<usize> {
+    fn receive(&mut self, client_info: ClientInfo, req_bytes: &usize) -> Option<usize> {
         self.counter += *req_bytes;
-        println!("in handler for srv! bytes so far: {}", self.counter);
-        Some(count)
+        println!("got req from {:?}! bytes so far: {}", client_info, self.counter);
+        Some(self.counter)
     }
 }
 
-fn main() {
+#[test]
+fn it_works() {
     let receiver = Box::new(ByteAddReceiver {
         counter: 0,
     });

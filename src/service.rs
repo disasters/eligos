@@ -40,17 +40,21 @@ impl<Req: 'static + Send, Res: 'static + Send> Service<Req, Res> {
         &mut self,
         receivers: Vec<Box<(Receive<Req, Res> + Send)>>,
     ) {
-        // A single MIO EventLoop handles our IO
         let mut workers = vec![];
         for receiver in receivers {
+            // Each receiver gets its own event loop and thread to run it
             let mut worker_loop: EventLoop<Worker<Req, Res>> = 
                 EventLoop::new().unwrap();
+
+            // The worker_loop channel is used to receive new connections
+            // from the single acceptor thread.
             workers.push(worker_loop.channel());
             let req_codec_clone = self.req_codec_factory.clone();
             let res_codec_clone = self.res_codec_factory.clone();
+
             thread::Builder::new().name(format!("worker loop")).spawn( move || {
                 let res_codec = (res_codec_clone)();
-                let max_conns = 8;
+                let max_conns = 131072;
                 let mut worker = Worker {
                     conns: Slab::new_starting_at(Token(0), max_conns),
                     req_codec_factory: req_codec_clone,
@@ -63,7 +67,8 @@ impl<Req: 'static + Send, Res: 'static + Send> Service<Req, Res> {
 
         self.workers = workers;
 
-        // accept forever 
+        // We use a single acceptor thread that does nothing but accept
+        // and hand off to a worker event loop.
         let mut accept_loop: EventLoop<Service<Req, Res>> = 
             EventLoop::new().unwrap();
 
@@ -81,7 +86,6 @@ impl<Req: 'static + Send, Res: 'static + Send> Service<Req, Res> {
         &mut self,
     ) -> io::Result<()> {
         let sock = try!(self.sock.accept());
-        println!("Service accepting socket");
         // TODO(tyler) load balancing logic here
         if sock.is_some() {
             self.workers[0].send(sock.unwrap());

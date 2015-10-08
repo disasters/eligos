@@ -19,7 +19,10 @@ pub struct Conn<Req: 'static + Send, Res: 'static + Send> {
 }
 
 impl<Req: 'static + Send, Res: 'static + Send> Conn<Req, Res> {
-    pub fn new(sock: TcpStream, codec: Box<Codec<ByteBuf, Req>>) -> Conn<Req, Res> {
+    pub fn new(
+        sock: TcpStream,
+        codec: Box<Codec<ByteBuf, Req>>
+    ) -> Conn<Req, Res> {
         Conn {
             sock: sock,
             codec: codec,
@@ -41,16 +44,12 @@ impl<Req: 'static + Send, Res: 'static + Send> Conn<Req, Res> {
         }
         let mut res_buf = self.res_bufs.remove(0);
 
-        println!("res buf: {:?}", res_buf.bytes());
         match self.sock.try_write_buf(&mut res_buf) {
             Ok(None) => {
-                println!("client flushing buf; WOULDBLOCK");
                 self.interest.insert(EventSet::writable());
             }
             Ok(Some(r)) => {
-                println!("CONN : we wrote {} bytes!", r);
                 self.res_remaining -= r;
-                println!("remaining: {}", self.res_remaining);
                 if self.res_remaining == 0 {
                     // we've written the whole response, now let's wait to read
                     self.interest.insert(EventSet::readable());
@@ -60,7 +59,7 @@ impl<Req: 'static + Send, Res: 'static + Send> Conn<Req, Res> {
             Err(e) => {
                 match e.raw_os_error() {
                     Some(32) => {
-                        println!("client disconnected");
+                        // client disconnected
                     },
                     Some(e) =>
                         println!("not implemented; client os err={:?}", e),
@@ -97,8 +96,6 @@ impl<Req: 'static + Send, Res: 'static + Send> Conn<Req, Res> {
                 self.interest.insert(EventSet::readable());
             }
             Ok(Some(r)) => {
-                println!("CONN : we read {} bytes!", r);
-                //T self.interest.remove(EventSet::readable());
                 self.interest.insert(EventSet::readable());
             }
             Err(e) => {
@@ -121,7 +118,11 @@ impl<Req: 'static + Send, Res: 'static + Send> Conn<Req, Res> {
         );
     }
 
-    pub fn reply(&mut self, event_loop: &mut EventLoop<Worker<Req, Res>>, res: ByteBuf) {
+    pub fn reply(
+        &mut self,
+        event_loop: &mut EventLoop<Worker<Req, Res>>,
+        res: ByteBuf
+    ) {
         self.res_remaining += res.bytes().len();
         self.res_bufs.push(res);
         self.interest.insert(EventSet::writable());

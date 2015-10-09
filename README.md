@@ -2,9 +2,9 @@
 Service framework for Rust!
 
 Concepts:
-* `Codec` deserializes requests and serializes responses
+* `Codec` is a state machine that deserializes requests and serializes responses.  There is a default `Framed` codec that just prefixes a message with 4 bytes representing its size.
 * `Service` accepts from a listening socket and hands the connection to one of the supplied `Receiver`s
-* `Receiver` uses user-supplied logic to handle a request and optionally respond.  Every Receiver has its own thread and MIO event loop.
+* `Receiver` uses user-supplied logic to handle a request, and optionally respond.  Every Receiver has its own thread and MIO event loop.
 
 ### Running
 ###### Cargo.toml
@@ -21,8 +21,12 @@ extern crate eligos;
 use self::bytes::{Buf, ByteBuf};
 use self::eligos::{Service, Codec, Receive, ClientInfo};
 
+// This codec just produces the length of the bytes you give it.
+// On the way out, it takes a usize and turns it into a string.
 struct CountCodec;
 
+// Codecs are state machines that incrementally eat bytes, and
+// returns the requests that have been parsed so far.
 impl Codec<ByteBuf, usize> for CountCodec {
     fn decode(&mut self, buf: &mut ByteBuf) -> Vec<usize> {
         println!("got some bytes in codec!");
@@ -36,15 +40,18 @@ impl Codec<ByteBuf, usize> for CountCodec {
     }
 }
 
+// Services will create a codec for each connection.  This tells them how!
 fn build_codec() -> Box<Codec<ByteBuf, usize>> {
     Box::new(CountCodec)
 }
 
+// Receivers get requests that are returned by Codecs.
 struct ByteAddReceiver {
     counter: usize,
 }
 
-// take requests of usize, return responses of usize
+// Take requests of usize, return responses of usize.  We can use different
+// Codecs for the request and response types.
 impl Receive<usize, usize> for ByteAddReceiver {
     fn receive(&mut self, client_info: ClientInfo, req_bytes: &usize) -> Option<usize> {
         self.counter += *req_bytes;

@@ -19,7 +19,7 @@ extern crate bytes;
 extern crate eligos;
 
 use self::bytes::{Buf, ByteBuf};
-use self::eligos::{Service, Codec, Receive};
+use self::eligos::{Service, Codec, Receive, ClientInfo};
 
 struct CountCodec;
 

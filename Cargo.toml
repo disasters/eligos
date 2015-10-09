@@ -1,0 +1,21 @@
+[package]
+name = "eligos"
+description = "Rusty Services"
+version = "0.1.0"
+authors = ["Tyler Neely <t@jujit.su>"]
+license = "Apache-2.0"
+homepage = "https://github.com/disasters/eligos"
+keywords = ["distributed-systems", "mio", "services"]
+
+[dependencies]
+bytes = "0.2.11"
+mio = "0.4.2"
+rand = "0.3"
+
+[dev-dependencies]
+quickcheck = "*"
+
+[[test]]
+
+name = "test"
+path = "test/test.rs"

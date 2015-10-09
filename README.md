@@ -2,11 +2,19 @@
 Service framework for Rust!
 
 Concepts:
-* `Codec` deserializes requests and serialize responses
+* `Codec` deserializes requests and serializes responses
 * `Service` accepts from a listening socket and hands the connection to one of the supplied `Receiver`s
 * `Receiver` uses user-supplied logic to handle a request and optionally respond.  Every Receiver has its own thread and MIO event loop.
 
+### Running
+###### Cargo.toml
+```rust
+[dependencies]
+eligos = "0.1.0"
+bytes = "0.2.11"
 ```
+###### Code
+```rust
 extern crate bytes;
 extern crate eligos;
 
